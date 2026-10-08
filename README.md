@@ -218,7 +218,16 @@ Para activar el proveedor real: `IMPLEMENTED = true` en `src/data/XTweetProvider
 
 ---
 
-## 6. Cómo modificar cosas
+## 6. Despliegue (Railway)
+
+En producción: **https://web-production-47aa4.up.railway.app**
+
+- Railway está conectado al repo `adrianlpzt/x-city`: **cada push a `main` se despliega solo**.
+- `railway.json` define build (`npm run build`), arranque (`npm start` → `server.mjs`) y healthcheck (`/healthz`).
+- `server.mjs` es un servidor estático sin dependencias: gzip, caché larga para `/assets/*` (llevan hash), protección contra path traversal y cabeceras de seguridad (CSP estricta, `nosniff`, `DENY` en iframes, `no-referrer`).
+- Cuando exista el backend Flask, lo natural es un segundo servicio en el mismo proyecto de Railway con el token de X como variable de entorno, y `connect-src` de la CSP ampliado a su dominio (o servido bajo el mismo).
+
+## 7. Cómo modificar cosas
 
 | Quiero… | Dónde |
 |---|---|
@@ -236,7 +245,7 @@ En el navegador tienes `window.__XCITY__` (el objeto `Phaser.Game`) para trastea
 
 ---
 
-## 7. Decisiones tomadas
+## 8. Decisiones tomadas
 
 1. **Ciudad en cuadrícula** (una manzana por chunk) en vez de una sola calle: cumple "caminar en cualquier dirección" y garantiza que las calles conectan siempre. La variedad viene de los edificios, plazas y emblemáticos.
 2. **Barrios en "dimensiones" separadas**: cada barrio tiene su propia semilla (`hash(seed, barrio)`) y al cambiar apareces en la misma esquina de partida. No están conectados físicamente (lo permitía el enunciado).
@@ -252,14 +261,14 @@ En el navegador tienes `window.__XCITY__` (el objeto `Phaser.Game`) para trastea
 12. **Sin audio** en v1 (`noAudio`), lo que además evita avisos del navegador sobre `AudioContext`.
 13. Usuarios, ciudades (Villaalegre, Pozoalto), clubes, grupos y películas **inventados**. Los @ son inventados, aunque no puedo garantizar que alguno no coincida por casualidad con una cuenta real.
 
-## 8. Rendimiento
+## 9. Rendimiento
 
 - Culling: los chunks y NPCs fuera de cámara se ocultan; los chunks lejanos se destruyen (texturas incluidas).
 - La lógica por frame es barata: en las pruebas la actualización de la escena tarda ~0,2 ms de mediana.
 - El coste puntual es generar un chunk (dibujarlo en texturas); por eso se limita a 1 por frame y se cargan con un chunk de margen.
-- **Pendiente de confirmar en tu máquina**: lo he verificado en un Chrome sin GPU (render por software), donde los FPS no son representativos. Con F3 ves los FPS reales; si en un portátil modesto no llegas a 60, baja `npc.target` o `world.loadMargin`.
+- Medido en el navegador del escritorio con GPU a 1440×900, caminando y generando chunks: **144 FPS** (el límite del monitor) y el peor frame en 7 ms. Si en un equipo modesto no llegas a 60, baja `npc.target` o `world.loadMargin`.
 
-## 9. Ideas para una v2
+## 10. Ideas para una v2
 
 - **Backend real** en Flask con caché (sección 5) y Listas de X por barrio.
 - **Avatares reales**: foto de perfil como "cara" del NPC (vía el backend, para no exponer URLs con tracking).
